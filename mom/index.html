@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Mom's Training Dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one personal column; her own logged words fill the background, cards float on top */
+:root {
+  --bg: #EEF3F0;
+  --surface: #FFFFFF;
+  --ink: #16241E;
+  --muted: #5B6B64;
+  --line: #D5DFDA;
+  --accent: #2E6B5A;      /* her colour: pine (she picked green on intake) */
+  --accent-soft: #DCEBE4;
+  --gold: #E3A21A;
+  --gold-soft: #FBEFD2;
+  --warn: #B4561F;
+  --bgword: rgba(46,107,90,.075);
+  --rose: #C2263A;
+  --rose-dark: #8E1527;
+  --stem: #4E8A5C;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1613; --surface: #16211D; --ink: #E7EFEB; --muted: #9AAAA3; --line: #26332E;
+  --accent: #6FBFA6; --accent-soft: #1D3029; --gold: #F0B94A; --gold-soft: #2E2716; --warn: #E8915C;
+  --bgword: rgba(111,191,166,.07); --rose: #E04A5C; --rose-dark: #A82638; --stem: #5FA06E; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1613; --surface: #16211D; --ink: #E7EFEB; --muted: #9AAAA3; --line: #26332E;
+  --accent: #6FBFA6; --accent-soft: #1D3029; --gold: #F0B94A; --gold-soft: #2E2716; --warn: #E8915C;
+  --bgword: rgba(111,191,166,.07); --rose: #E04A5C; --rose-dark: #A82638; --stem: #5FA06E; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55; overflow-x: hidden }
+
+.wordfield { position: fixed; inset: 0; overflow: hidden; pointer-events: none; z-index: 0 }
+.garden { position: fixed; left: 0; right: 0; bottom: 0; height: 190px; z-index: 0; pointer-events: none }
+.garden svg { width: 100%; height: 100%; display: block }
+.gardencard { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center }
+.gardencard .num { font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1; color: var(--rose) }
+.wordfield span { position: absolute; font-family: var(--display); font-weight: 800; color: var(--bgword); white-space: nowrap; line-height: 1 }
+
+.sample { position: relative; z-index: 2; background: var(--gold-soft); color: var(--ink); font-size: 13px; text-align: center;
+  padding-block: 8px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+
+.wrap { position: relative; z-index: 1; max-width: 880px; margin: 0 auto; display: grid; gap: 18px;
+  padding-block: 28px 210px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+
+header { display: grid; gap: 6px; padding-block: 8px 6px }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent) }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 7vw, 54px); line-height: 1.02; margin: 0; text-wrap: balance; letter-spacing: -.01em }
+.lede { color: var(--muted); max-width: 60ch; margin: 0; font-size: 16px }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0 }
+.card h2 { font-family: var(--display); font-weight: 700; font-size: 19px; margin: 0 0 12px; letter-spacing: -.005em }
+.label { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+
+.grid2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 18px }
+.grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px }
+@media (max-width: 680px) { .grid2, .grid3 { grid-template-columns: 1fr } }
+
+/* focus */
+.focus { background: var(--accent); color: var(--surface); border: 0 }
+.focus .label { color: inherit; opacity: .8 }
+.focus p.big { font-family: var(--display); font-weight: 700; font-size: clamp(22px, 4vw, 28px); line-height: 1.15; margin: 6px 0 10px; text-wrap: balance }
+.focus p { margin: 0 }
+
+/* streak */
+.weeks { display: grid; grid-template-columns: auto repeat(7, 1fr); gap: 5px; align-items: center; font-variant-numeric: tabular-nums }
+.weeks .d { font-family: var(--mono); font-size: 10px; color: var(--muted); text-align: center }
+.weeks .wk { font-family: var(--mono); font-size: 10px; color: var(--muted); padding-right: 6px }
+.cell { aspect-ratio: 1; max-width: 100%; border-radius: 5px; background: var(--accent-soft) }
+.cell.w { background: var(--accent) }
+.cell.walk { background: var(--gold) }
+.cell.now { outline: 2px solid var(--ink); outline-offset: 1px }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 12px; font-size: 13px; color: var(--muted) }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px }
+
+/* stats */
+.stat .num { font-family: var(--display); font-weight: 800; font-size: 40px; line-height: 1; font-variant-numeric: tabular-nums }
+.stat .num small { font-size: 18px; font-weight: 700; color: var(--muted) }
+.stat p { margin: 6px 0 0; color: var(--muted); font-size: 14px }
+
+/* wins */
+.wins { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0 }
+.wins li { background: var(--gold-soft); border-radius: 999px; padding: 6px 12px; font-size: 14px }
+.wins li b { font-weight: 600 }
+.wins li time { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-left: 6px }
+
+/* work on */
+.todo { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px }
+.todo li { display: grid; grid-template-columns: 22px 1fr; gap: 10px; align-items: start }
+.todo .dot { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--warn); margin-top: 1px }
+.todo .dot.half { background: linear-gradient(90deg, var(--warn) 50%, transparent 50%) }
+.todo b { font-weight: 600; display: block }
+.todo span { color: var(--muted); font-size: 14px }
+
+/* chart */
+.chart svg { width: 100%; height: auto; display: block }
+.chart text { font-family: var(--mono); font-size: 10px; fill: var(--muted) }
+
+/* note */
+.note { display: grid; grid-template-columns: 52px 1fr; gap: 14px; align-items: start }
+.avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; font-family: var(--display); font-weight: 800; font-size: 18px }
+.note p { margin: 0 0 8px; max-width: 62ch }
+.note .sig { color: var(--muted); font-size: 14px; margin: 0 }
+
+/* plan table */
+.plan { width: 100%; border-collapse: collapse; font-size: 14px }
+.plan td { padding: 9px 0; border-top: 1px solid var(--line); vertical-align: top }
+.plan td:first-child { font-family: var(--mono); font-size: 12px; color: var(--muted); width: 64px; padding-top: 11px }
+.plan tr.done td:nth-child(2) { color: var(--muted); text-decoration: line-through }
+.tag { display: inline-block; font-size: 11px; font-family: var(--mono); padding: 2px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); margin-left: 6px }
+
+.about { display: flex; flex-wrap: wrap; gap: 8px }
+.about span { border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 14px }
+
+footer { color: var(--muted); font-size: 13px; text-align: center; padding-top: 8px }
+.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px }
+@media (max-width: 480px) { .actions { grid-template-columns: 1fr } }
+.btn { display: grid; gap: 2px; text-decoration: none; border-radius: 14px; padding: 16px 18px; font-family: var(--display); font-weight: 700; font-size: 19px; line-height: 1.15 }
+.btn small { font-family: var(--body); font-weight: 500; font-size: 13px; opacity: .85 }
+.btn.primary { background: var(--rose); color: #fff }
+.btn.secondary { background: var(--surface); color: var(--ink); border: 1px solid var(--line) }
+.btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+</style>
+
+<div class="wordfield" id="wordfield" aria-hidden="true"></div>
+<div class="garden" aria-hidden="true"><svg id="garden" preserveAspectRatio="none" viewBox="0 0 1000 190"></svg></div>
+
+<div class="sample">Sample only. The words, numbers and notes are made up to show the idea. Your mom's real logs would fill this in.</div>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Week 6 · coached by @rd_train</div>
+    <h1>Hey Mom, that's 4 weeks in a row.</h1>
+    <p class="lede">Everything here comes from what you log after workouts and in your Sunday check-in. It grows as you do.</p>
+  </header>
+
+  <nav class="actions" aria-label="Log">
+    <a class="btn primary" href="https://different-lamprey-d9f.notion.site/e69f29c6d7dc4dc1ba1910e7bfb7705e?pvs=105" target="_blank" rel="noopener">🌹 Log today's workout<small>30 seconds. Plants a rose.</small></a>
+    <a class="btn secondary" href="#checkin" aria-disabled="true">Sunday check-in<small>Link coming once the form is ready</small></a>
+  </nav>
+
+  <section class="card gardencard">
+    <div>
+      <h2 style="margin-bottom:4px">Your garden</h2>
+      <p style="margin:0;color:var(--muted)">Every workout you log plants a rose at the bottom of this page. Walks grow a bud. Patience pays off, and so does showing up.</p>
+    </div>
+    <div class="num">17<span style="font-size:15px;color:var(--muted);font-weight:600"> roses</span></div>
+  </section>
+
+  <section class="card focus">
+    <div class="label">This week's one thing</div>
+    <p class="big">Get your 3 workouts in before Friday so the weekend is free for the garden.</p>
+    <p>You said weekends get busy. Front-loading the week worked twice already.</p>
+  </section>
+
+  <div class="grid3">
+    <section class="card stat"><div class="label">Workouts logged</div><div class="num">17</div><p>Since you started on Sept 15</p></section>
+    <section class="card stat"><div class="label">Goblet squat</div><div class="num">20<small> lb</small></div><p>Started at 10 lb. Knees feeling good.</p></section>
+    <section class="card stat"><div class="label">Avg energy</div><div class="num">4.1<small> /5</small></div><p>Up from 3.2 in week 1</p></section>
+  </div>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>Your consistency</h2>
+      <div class="weeks" id="weeks"></div>
+      <div class="legend"><span><i style="background:var(--accent)"></i>Workout</span><span><i style="background:var(--gold)"></i>Walk</span><span><i style="background:var(--accent-soft)"></i>Rest</span></div>
+    </section>
+    <section class="card chart">
+      <h2>Workouts per week</h2>
+      <svg viewBox="0 0 300 170" role="img" aria-label="Workouts per week: 1, 2, 2, 3, 3, 3. Goal is 3.">
+        <line x1="28" x2="292" y1="40" y2="40" stroke="var(--gold)" stroke-dasharray="4 4" stroke-width="1.5"/>
+        <text x="292" y="34" text-anchor="end" style="fill:var(--gold)">goal 3</text>
+        <line x1="28" x2="292" y1="140" y2="140" stroke="var(--line)"/>
+        <g id="bars"></g>
+      </svg>
+    </section>
+  </div>
+
+  <section class="card">
+    <h2>Wins wall</h2>
+    <ul class="wins" id="wins"></ul>
+  </section>
+
+  <div class="grid2">
+    <section class="card">
+      <h2>What we're working on</h2>
+      <ul class="todo">
+        <li><div class="dot half"></div><div><b>Drinking water before workouts</b><span>Logged it 3 of 6 days. Keep the bottle by your shoes.</span></div></li>
+        <li><div class="dot"></div><div><b>Slower lowering on squats</b><span>Count 3 down, 1 up. We'll film one next session.</span></div></li>
+        <li><div class="dot"></div><div><b>Bed by 10:30 on workout nights</b><span>Your two best sessions came after a good sleep.</span></div></li>
+      </ul>
+    </section>
+    <section class="card">
+      <h2>This week's plan</h2>
+      <table class="plan">
+        <tr class="done"><td>Mon</td><td>Workout A: squats, rows, step-ups</td></tr>
+        <tr><td>Wed</td><td>Workout B: hinge, push, carries <span class="tag">with Ryan</span></td></tr>
+        <tr><td>Thu</td><td>20-min walk</td></tr>
+        <tr><td>Fri</td><td>Workout A again, add 1 rep each</td></tr>
+        <tr><td>Sun</td><td>5-min check-in form</td></tr>
+      </table>
+    </section>
+  </div>
+
+  <section class="card note">
+    <div class="avatar">RD</div>
+    <div>
+      <div class="label" style="margin-bottom:6px">Note from Ryan · Mon Oct 26</div>
+      <p>Four straight weeks is the part most people never get to. You didn't skip once when you were tired, you just did the shorter version, which is exactly the habit we want.</p>
+      <p>This week, don't add anything new. Same workouts, same days. Boring is good right now.</p>
+      <p class="sig">Next check-in: Sunday. Next session together: Wednesday 6pm.</p>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>About you</h2>
+    <div class="about"><span>Loves: gardening</span><span>Loves: her family</span><span>Soundtrack: Guns N' Roses</span><span>Goal: strong and pain-free in the garden</span><span>Why: keeping up with the family</span></div>
+  </section>
+
+  <footer>Updated every Monday from your logs · Built for you by Ryan, @rd_train</footer>
+</main>
+
+<script>
+// Her own logged words become the background
+const words = ["strong for the family", "garden ready", "4 weeks", "keep growing", "20 lb squat", "patience",
+  "no skipped days", "roses", "did it tired", "pain-free knees", "showed up", "family first", "3 for 3", "bloom"];
+const field = document.getElementById("wordfield");
+let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+for (let i = 0; i < 34; i++) {
+  const s = document.createElement("span");
+  s.textContent = words[i % words.length];
+  s.style.left = (rnd() * 110 - 15) + "%";
+  s.style.top = (rnd() * 105 - 3) + "%";
+  s.style.fontSize = (28 + rnd() * 70) + "px";
+  s.style.transform = "rotate(" + (rnd() * 16 - 8) + "deg)";
+  field.appendChild(s);
+}
+
+// Garden: one rose per logged workout, one bud per walk
+const NS = "http://www.w3.org/2000/svg", gsvg = document.getElementById("garden");
+const el = (t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); gsvg.appendChild(e); return e; };
+let gs = 3; const gr = () => (gs = (gs * 9301 + 49297) % 233280) / 233280;
+el("rect", { x: 0, y: 176, width: 1000, height: 14, fill: "var(--stem)", opacity: .35 });
+const plants = [];
+for (let i = 0; i < 17; i++) plants.push("rose");
+for (let i = 0; i < 8; i++) plants.push("bud");
+plants.sort(() => gr() - .5).forEach((kind, i, arr) => {
+  const x = 20 + i * (960 / (arr.length - 1)) + (gr() * 14 - 7);
+  const h = kind === "rose" ? 70 + gr() * 85 : 35 + gr() * 35;
+  const top = 178 - h, lean = gr() * 16 - 8;
+  el("path", { d: `M${x} 178 Q${x + lean} ${178 - h / 2} ${x + lean / 2} ${top}`, stroke: "var(--stem)", "stroke-width": 2.5, fill: "none" });
+  el("ellipse", { cx: x + lean * .6 + 9, cy: 178 - h * .45, rx: 9, ry: 4, fill: "var(--stem)", transform: `rotate(-30 ${x + lean * .6 + 9} ${178 - h * .45})` });
+  if (kind === "rose") {
+    const cx = x + lean / 2, r = 9 + gr() * 5;
+    el("circle", { cx, cy: top, r: r + 3, fill: "var(--rose-dark)" });
+    el("circle", { cx: cx - 2, cy: top - 1, r, fill: "var(--rose)" });
+    el("path", { d: `M${cx - r * .5} ${top} q${r * .5} ${-r * .7} ${r} 0`, stroke: "var(--rose-dark)", "stroke-width": 1.5, fill: "none" });
+  } else {
+    el("ellipse", { cx: x + lean / 2, cy: top, rx: 4, ry: 7, fill: "var(--rose)", opacity: .85 });
+  }
+});
+
+// Consistency grid, 6 weeks x 7 days (w = workout, k = walk, . = rest)
+const log = ["w..k...", "w..w.k.", "w.k.w..", "w.w.w.k", "w.w.wk.", "w.w.wk."];
+const g = document.getElementById("weeks");
+g.insertAdjacentHTML("beforeend", "<span></span>" + ["M","T","W","T","F","S","S"].map(d => `<span class="d">${d}</span>`).join(""));
+log.forEach((row, wi) => {
+  g.insertAdjacentHTML("beforeend", `<span class="wk">Wk ${wi + 1}</span>`);
+  [...row].forEach((c, di) => {
+    const cls = c === "w" ? "cell w" : c === "k" ? "cell walk" : "cell";
+    const now = wi === 5 && di === 0 ? " now" : "";
+    g.insertAdjacentHTML("beforeend", `<span class="${cls}${now}"></span>`);
+  });
+});
+
+// Bars: one scale, 0..3 maps 140..40
+const per = [1, 2, 2, 3, 3, 3], bars = document.getElementById("bars");
+const y = v => 140 - v * (100 / 3), bw = 30, gap = (264 - per.length * bw) / (per.length - 1);
+[0, 1, 2, 3].forEach(v => bars.insertAdjacentHTML("beforeend", `<text x="20" y="${y(v) + 3}" text-anchor="end">${v}</text>`));
+per.forEach((v, i) => {
+  const x = 28 + i * (bw + gap);
+  const fill = v >= 3 ? "var(--accent)" : "var(--accent-soft)";
+  bars.insertAdjacentHTML("beforeend",
+    `<rect x="${x}" y="${y(v)}" width="${bw}" height="${140 - y(v)}" rx="4" fill="${fill}"/>` +
+    `<text x="${x + bw / 2}" y="156" text-anchor="middle">Wk ${i + 1}</text>`);
+});
+
+// Wins wall, newest first
+const wins = [["4 weeks straight, zero skips", "Oct 25"], ["Goblet squat up to 20 lb", "Oct 21"], ["Did the short workout instead of skipping", "Oct 14"],
+  ["First full push-up off the counter", "Oct 9"], ["Walked 3 days in one week", "Oct 4"], ["Knee didn't hurt on step-ups", "Sep 29"], ["Finished week 1", "Sep 21"]];
+document.getElementById("wins").innerHTML = wins.map(([t, d]) => `<li><b>${t}</b><time>${d}</time></li>`).join("");
+</script>
+
+</html>
