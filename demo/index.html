@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Jordan's 12-Week Preview</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one column; week picker on top, his trail fills the bottom and climbs as she moves through the weeks */
+:root {
+  --bg: #EEF3F0; --surface: #FFFFFF; --ink: #16241E; --muted: #5B6B64; --line: #D5DFDA;
+  --accent: #2E6B5A; --accent-soft: #DCEBE4; --gold-soft: #FBEFD2;
+  --rose: #D9622B; --rose-dark: #9C3E14; --stem: #5E7C8C;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0E1613; --surface: #16211D; --ink: #E7EFEB; --muted: #9AAAA3; --line: #26332E;
+  --accent: #6FBFA6; --accent-soft: #1D3029; --gold-soft: #2E2716;
+  --rose: #F08A52; --rose-dark: #C0602F; --stem: #7FA0B0; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0E1613; --surface: #16211D; --ink: #E7EFEB; --muted: #9AAAA3; --line: #26332E;
+  --accent: #6FBFA6; --accent-soft: #1D3029; --gold-soft: #2E2716;
+  --rose: #F08A52; --rose-dark: #C0602F; --stem: #7FA0B0; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55; overflow-x: hidden }
+.sample { background: var(--gold-soft); font-size: 13px; text-align: center; padding-block: 8px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.wrap { position: relative; z-index: 1; max-width: 820px; margin: 0 auto; display: grid; gap: 18px;
+  padding-block: 28px 230px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+.eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--accent) }
+h1 { font-family: var(--display); font-weight: 800; font-size: clamp(32px, 6.5vw, 50px); line-height: 1.04; margin: 6px 0 8px; text-wrap: balance }
+.lede { color: var(--muted); margin: 0; max-width: 60ch; font-size: 16px }
+
+.weeks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px }
+.weeks button { font: 600 15px var(--body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 6px; cursor: pointer }
+.weeks button small { display: block; font: 500 11px var(--mono); color: var(--muted); letter-spacing: .04em }
+.weeks button[aria-pressed="true"] { background: var(--accent); color: var(--surface); border-color: var(--accent) }
+.weeks button[aria-pressed="true"] small { color: inherit; opacity: .8 }
+.weeks button:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; min-width: 0 }
+.card h2 { font-family: var(--display); font-weight: 700; font-size: 20px; margin: 0 0 6px }
+.label { font-family: var(--mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px }
+@media (max-width: 620px) { .stats { grid-template-columns: 1fr } .weeks button { font-size: 14px } }
+.num { font-family: var(--display); font-weight: 800; font-size: 38px; line-height: 1.05; font-variant-numeric: tabular-nums }
+.num small { font-size: 17px; color: var(--muted); font-weight: 700 }
+.stat p { margin: 4px 0 0; color: var(--muted); font-size: 14px }
+.rosenum { color: var(--rose) }
+
+.miles { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 10px }
+.miles li { display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center }
+.miles .chk { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line) }
+.miles li.on .chk { background: var(--accent); border-color: var(--accent) }
+.miles li:not(.on) { color: var(--muted) }
+.miles time { font: 500 11px var(--mono); color: var(--muted) }
+
+.deal { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px }
+@media (max-width: 620px) { .deal { grid-template-columns: 1fr } }
+.deal div { background: var(--accent-soft); border-radius: 10px; padding: 12px }
+.deal b { display: block; font-family: var(--display); font-size: 18px }
+.deal span { font-size: 14px; color: var(--muted) }
+.fine { color: var(--muted); font-size: 13px; margin: 0; max-width: 64ch }
+
+.trail { position: fixed; left: 0; right: 0; bottom: 0; height: 200px; z-index: 0; pointer-events: none }
+.trail svg { width: 100%; height: 100%; display: block }
+.trail g { transition: opacity .5s ease }
+@media (prefers-reduced-motion: reduce) { .trail g { transition: none } }
+</style>
+<div class="trail" aria-hidden="true"><svg id="trail" preserveAspectRatio="none" viewBox="0 0 1000 200"></svg></div>
+
+<div class="sample">Demo with a made-up client. Your preview gets built from your own goal session.</div>
+
+<main class="wrap">
+  <header>
+    <div class="eyebrow">Your plan · coached by @rd_train</div>
+    <h1>Here's where 12 weeks can take you, Jordan.</h1>
+    <p class="lede">You played hockey growing up, life got busy, and the habits slipped. This is what your dashboard looks like if you stick with the plan. Tap through the weeks and watch the trail fill in.</p>
+  </header>
+
+  <div class="weeks" role="group" aria-label="Pick a week">
+    <button type="button" data-w="1" aria-pressed="true">Week 1<small>Start</small></button>
+    <button type="button" data-w="4" aria-pressed="false">Week 4<small>Habit</small></button>
+    <button type="button" data-w="8" aria-pressed="false">Week 8<small>Stronger</small></button>
+    <button type="button" data-w="12" aria-pressed="false">Week 12<small>Goal</small></button>
+  </div>
+
+  <section class="card">
+    <h2 id="headline"></h2>
+    <p class="fine" id="feel" style="font-size:15px"></p>
+  </section>
+
+  <div class="stats">
+    <section class="card stat"><div class="label">Your trail</div><div class="num rosenum" id="roses"></div><p>One flag per workout</p></section>
+    <section class="card stat"><div class="label">Push-ups</div><div class="num" id="squat"></div><p id="squatnote"></p></section>
+    <section class="card stat"><div class="label">Grouse Grind</div><div class="num" id="bags"></div><p>Time to the top</p></section>
+  </div>
+
+  <section class="card">
+    <h2>Milestones</h2>
+    <ul class="miles" id="miles"></ul>
+  </section>
+
+  <section class="card">
+    <h2>What it takes</h2>
+    <p class="fine" style="font-size:15px">This only happens if we both show up. Here's the deal:</p>
+    <div class="deal">
+      <div><b>3 workouts a week</b><span>45 minutes. A short one on a busy day still counts.</span></div>
+      <div><b>30-second log</b><span>After every workout, right from your dashboard.</span></div>
+      <div><b>Sunday check-in</b><span>2 minutes. I read every one and adjust your plan.</span></div>
+    </div>
+  </section>
+
+  <p class="fine">Everyone moves at their own pace. Missed weeks happen, and we just pick back up. Your real dashboard tracks what actually happens, and we compare it to this every month.</p>
+</main>
+
+<script>
+const plan = {
+  1:  { roses: 3,  squat: "8",  note: "Full push-ups in one set", bags: "1:50", head: "Week 1: just show up 3 times.", feel: "You'll be sore and it'll feel like starting over. That's fine. The only goal this week is your first 3 flags." },
+  4:  { roses: 12, squat: "15", note: "Almost double week 1", bags: "1:35", head: "Week 4: the habit is forming.", feel: "You stop debating whether to go. Gym days are just on the calendar, like practice used to be." },
+  8:  { roses: 24, squat: "22", note: "Clean reps, chest to the floor", bags: "1:20", head: "Week 8: you feel like an athlete again.", feel: "More energy, better sleep, and clothes fitting looser. Rec hockey doesn't gas you after two shifts." },
+  12: { roses: 36, squat: "30", note: "Nearly 4x where you started", bags: "1:05", head: "Week 12: summit.", feel: "36 workouts done. Training is part of who you are again, and you know exactly what to do next." }
+};
+const miles = [
+  [1, "First workout logged"], [2, "First full week, 3 for 3"], [4, "4 weeks in a row"],
+  [5, "First Grouse Grind finish"], [8, "20+ push-ups in one set"],
+  [10, "Full rec hockey game without fading"], [12, "36 flags, summit"]
+];
+
+// Mountain ridge plus 36 flags planted along the trail; show flags up to the current week
+const NS = "http://www.w3.org/2000/svg", svg = document.getElementById("trail");
+const add = (p, t, a) => { const e = document.createElementNS(NS, t); for (const k in a) e.setAttribute(k, a[k]); p.appendChild(e); return e; };
+add(svg, "path", { d: "M0 200 L0 170 L120 150 L230 120 L330 135 L450 95 L560 105 L680 60 L780 72 L880 30 L940 20 L1000 40 L1000 200 Z", fill: "var(--stem)", opacity: .28 });
+add(svg, "path", { d: "M0 200 L0 185 L200 175 L380 160 L560 140 L740 112 L900 78 L1000 70 L1000 200 Z", fill: "var(--stem)", opacity: .45 });
+const ridgeY = x => { const pts = [[0,185],[200,175],[380,160],[560,140],[740,112],[900,78],[1000,70]];
+  for (let i = 1; i < pts.length; i++) if (x <= pts[i][0]) { const [x0,y0] = pts[i-1], [x1,y1] = pts[i]; return y0 + (y1 - y0) * (x - x0) / (x1 - x0); } return 70; };
+const plants = [...Array(36).keys()].map(i => {
+  const g = add(svg, "g", {});
+  const x = 18 + i * (960 / 35), y = ridgeY(x), h = i === 35 ? 34 : 20;
+  add(g, "line", { x1: x, y1: y, x2: x, y2: y - h, stroke: "var(--ink)", "stroke-width": 1.6, opacity: .7 });
+  add(g, "path", { d: `M${x} ${y - h} l${i === 35 ? 18 : 11} 4 l${i === 35 ? -18 : -11} 4 z`, fill: i === 35 ? "var(--rose-dark)" : "var(--rose)" });
+  return g;
+});
+
+function show(w) {
+  const p = plan[w];
+  document.getElementById("headline").textContent = p.head;
+  document.getElementById("feel").textContent = p.feel;
+  document.getElementById("roses").textContent = p.roses;
+  document.getElementById("squat").textContent = p.squat;
+  document.getElementById("squatnote").textContent = p.note;
+  document.getElementById("bags").textContent = p.bags;
+  document.getElementById("miles").innerHTML = miles.map(([wk, t]) =>
+    `<li class="${wk <= w ? "on" : ""}"><span class="chk"></span><span>${t}</span><time>Wk ${wk}</time></li>`).join("");
+  plants.forEach((g, i) => g.style.opacity = i < p.roses ? 1 : 0);
+  document.querySelectorAll(".weeks button").forEach(b => b.setAttribute("aria-pressed", b.dataset.w == w));
+}
+document.querySelectorAll(".weeks button").forEach(b => b.addEventListener("click", () => show(+b.dataset.w)));
+show(1);
+</script>
+
+</html>
